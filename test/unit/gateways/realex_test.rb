@@ -5,7 +5,8 @@ class RealexTest < Test::Unit::TestCase
   
   class ActiveMerchant::Billing::RealexGateway
     # For the purposes of testing, lets redefine some protected methods as public.
-    public :build_purchase_or_authorization_request, :build_refund_request, :build_void_request, :build_capture_request, :avs_input_code
+    public :build_purchase_or_authorization_request, :build_refund_request, :build_void_request, :build_capture_request, :avs_input_code,
+           :build_add_payer_request
   end
   
   def setup
@@ -262,6 +263,30 @@ SRC
 
     assert_xml_equal valid_refund_request_xml, gateway.build_refund_request(@amount, '1;4321;1234', {})
 
+  end
+
+  def test_add_payer_xml
+    gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
+
+    options = {
+      :order_id => '1',
+    }
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_add_payer_xml = <<-SRC
+<request timestamp="20090824160201" type="payer-new">
+  <merchantid>your_merchant_id</merchantid>
+  <orderid>1</orderid>
+  <payer type="Business" ref="Longbob_Longsen">
+    <firstname>Longbob</firstname>
+    <surname>Longsen</surname>
+  </payer>
+  <sha1hash>940846325851cfb37bfc1bf36318980609837d2c</sha1hash>
+</request>
+SRC
+    
+    assert_xml_equal valid_add_payer_xml, gateway.build_add_payer_request(@credit_card, options)
   end
   
   def test_should_extract_avs_input

@@ -138,6 +138,22 @@ module ActiveMerchant
         xml.target!
       end
 
+      def build_add_payer_request(credit_card, options) 
+        timestamp = new_timestamp
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'payer-new' do
+          xml.tag! 'merchantid', @options[:login]
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id])
+          xml.tag! 'payer', 'type' => 'Business', 'ref' => payer_ref(credit_card) do
+            xml.tag! 'firstname', credit_card.first_name
+            xml.tag! 'surname', credit_card.last_name
+          end
+          add_signed_digest(xml, timestamp, @options[:login], sanitize_order_id(options[:order_id]), 
+            nil, nil, payer_ref(credit_card))
+        end
+        xml.target!
+      end
+
       def build_capture_request(authorization, options)
         timestamp = new_timestamp
         xml = Builder::XmlMarkup.new :indent => 2
@@ -241,6 +257,10 @@ module ActiveMerchant
             xml.tag! 'presind', (options['presind'] || (credit_card.verification_value? ? 1 : nil))
           end
         end
+      end
+
+      def payer_ref(credit_card)
+        "#{credit_card.first_name}_#{credit_card.last_name}"
       end
 
       def avs_input_code(address)
