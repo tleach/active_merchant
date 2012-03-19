@@ -176,6 +176,20 @@ module ActiveMerchant
         xml.target!
       end
 
+      def build_delete_payment_method_request(payer_ref, card_ref) 
+        timestamp = new_timestamp
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'card-cancel-card' do
+          xml.tag! 'merchantid', @options[:login]
+          xml.tag! 'card' do
+            xml.tag! 'ref', card_ref
+            xml.tag! 'payerref', payer_ref
+          end
+
+          add_signed_digest(xml, timestamp, @options[:login], payer_ref, card_ref)
+        end
+      end
+
       def build_capture_request(authorization, options)
         timestamp = new_timestamp
         xml = Builder::XmlMarkup.new :indent => 2

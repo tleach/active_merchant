@@ -6,7 +6,7 @@ class RealexTest < Test::Unit::TestCase
   class ActiveMerchant::Billing::RealexGateway
     # For the purposes of testing, lets redefine some protected methods as public.
     public :build_purchase_or_authorization_request, :build_refund_request, :build_void_request, :build_capture_request, :avs_input_code,
-           :build_add_payer_request, :build_add_payment_method_request
+           :build_add_payer_request, :build_add_payment_method_request, :build_delete_payment_method_request
   end
   
   def setup
@@ -319,6 +319,27 @@ SRC
     
     assert_xml_equal valid_add_payment_method_xml, gateway.build_add_payment_method_request(@credit_card, options)
   end
+
+
+  def test_delete_payment_method_xml
+    gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_delete_payment_method_xml = <<-SRC
+<request timestamp="20090824160201" type="card-cancel-card">
+  <merchantid>your_merchant_id</merchantid>
+  <card>
+    <ref>Longbob_Longsen1</ref>
+    <payerref>Longbob_Longsen</payerref>
+  </card>
+  <sha1hash>822386d63aae3b39d4dd92e09932f6af88bf677d</sha1hash>
+</request>
+SRC
+    
+    assert_xml_equal valid_delete_payment_method_xml, gateway.build_delete_payment_method_request('Longbob_Longsen', 'Longbob_Longsen1')    
+  end
+
 
   def test_should_extract_avs_input
     address = {:address1 => "123 Fake Street", :zip => 'BT1 0HX'}
