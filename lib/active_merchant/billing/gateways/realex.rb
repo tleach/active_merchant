@@ -144,12 +144,34 @@ module ActiveMerchant
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'payer-new' do
           xml.tag! 'merchantid', @options[:login]
           xml.tag! 'orderid', sanitize_order_id(options[:order_id])
-          xml.tag! 'payer', 'type' => 'Business', 'ref' => payer_ref(credit_card) do
+          xml.tag! 'payer', 'type' => 'Business', 'ref' => options[:customer] do
             xml.tag! 'firstname', credit_card.first_name
             xml.tag! 'surname', credit_card.last_name
           end
           add_signed_digest(xml, timestamp, @options[:login], sanitize_order_id(options[:order_id]), 
-            nil, nil, payer_ref(credit_card))
+            nil, nil, options[:customer])
+        end
+        xml.target!
+      end
+
+      def build_add_payment_method_request(credit_card, options)
+        timestamp = new_timestamp
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'card-new' do
+          xml.tag! 'merchantid', @options[:login]
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id])
+          xml.tag! 'card' do
+            xml.tag! 'ref', options[:customer] + "1"
+            xml.tag! 'payerref', options[:customer]
+            xml.tag! 'number', credit_card.number
+            xml.tag! 'expdate', expiry_date(credit_card)
+            xml.tag! 'chname', credit_card.name
+            xml.tag! 'type', CARD_MAPPING[card_brand(credit_card).to_s]
+            xml.tag! 'issueno', credit_card.issue_number
+          end
+
+          add_signed_digest(xml, timestamp, @options[:login], sanitize_order_id(options[:order_id]), 
+            nil, nil, options[:customer], credit_card.name.delete(' '), credit_card.number)
         end
         xml.target!
       end

@@ -6,7 +6,7 @@ class RealexTest < Test::Unit::TestCase
   class ActiveMerchant::Billing::RealexGateway
     # For the purposes of testing, lets redefine some protected methods as public.
     public :build_purchase_or_authorization_request, :build_refund_request, :build_void_request, :build_capture_request, :avs_input_code,
-           :build_add_payer_request
+           :build_add_payer_request, :build_add_payment_method_request
   end
   
   def setup
@@ -270,6 +270,7 @@ SRC
 
     options = {
       :order_id => '1',
+      :customer => 'Longbob_Longsen'
     }
 
     gateway.expects(:new_timestamp).returns('20090824160201')
@@ -289,6 +290,36 @@ SRC
     assert_xml_equal valid_add_payer_xml, gateway.build_add_payer_request(@credit_card, options)
   end
   
+  def test_add_payment_method_xml
+    gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
+
+    options = {
+      :order_id => '1',
+      :customer => 'Longbob_Longsen'
+    }
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_add_payment_method_xml = <<-SRC
+<request timestamp="20090824160201" type="card-new">
+  <merchantid>your_merchant_id</merchantid>
+  <orderid>1</orderid>
+  <card>
+    <ref>Longbob_Longsen1</ref>
+    <payerref>Longbob_Longsen</payerref>
+    <number>4263971921001307</number>
+    <expdate>0808</expdate>
+    <chname>Longbob Longsen</chname>
+    <type>VISA</type>
+    <issueno />
+  </card>
+  <sha1hash>2e88b9d3b173a1b00a70476743a696c651ce35bb</sha1hash>
+</request>
+SRC
+    
+    assert_xml_equal valid_add_payment_method_xml, gateway.build_add_payment_method_request(@credit_card, options)
+  end
+
   def test_should_extract_avs_input
     address = {:address1 => "123 Fake Street", :zip => 'BT1 0HX'}
     assert_equal "10|123", @gateway.avs_input_code(address)
