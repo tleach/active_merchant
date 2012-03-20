@@ -143,7 +143,7 @@ module ActiveMerchant
         xml = Builder::XmlMarkup.new :indent => 2
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'payer-new' do
           xml.tag! 'merchantid', @options[:login]
-          xml.tag! 'orderid', sanitize_order_id(options[:order_id])
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id]) if options.include?(:order_id)
           xml.tag! 'payer', 'type' => 'Business', 'ref' => options[:customer] do
             xml.tag! 'firstname', credit_card.first_name
             xml.tag! 'surname', credit_card.last_name
@@ -159,7 +159,7 @@ module ActiveMerchant
         xml = Builder::XmlMarkup.new :indent => 2
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'card-new' do
           xml.tag! 'merchantid', @options[:login]
-          xml.tag! 'orderid', sanitize_order_id(options[:order_id])
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id]) if options.include?(:order_id)
           xml.tag! 'card' do
             xml.tag! 'ref', options[:customer] + "1"
             xml.tag! 'payerref', options[:customer]

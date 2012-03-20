@@ -268,6 +268,7 @@ SRC
   def test_add_payer_xml
     gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
 
+    # First test the method when the optional order ID is included.
     options = {
       :order_id => '1',
       :customer => 'Longbob_Longsen'
@@ -284,6 +285,26 @@ SRC
     <surname>Longsen</surname>
   </payer>
   <sha1hash>940846325851cfb37bfc1bf36318980609837d2c</sha1hash>
+</request>
+SRC
+    
+    assert_xml_equal valid_add_payer_xml, gateway.build_add_payer_request(@credit_card, options)
+
+    # Test the method with the order ID omitted
+    options = {
+      :customer => 'Longbob_Longsen'
+    }
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_add_payer_xml = <<-SRC
+<request timestamp="20090824160201" type="payer-new">
+  <merchantid>your_merchant_id</merchantid>
+  <payer type="Business" ref="Longbob_Longsen">
+    <firstname>Longbob</firstname>
+    <surname>Longsen</surname>
+  </payer>
+  <sha1hash>56b1d48eacf4d7bf135a3866b52491f47a5fadcb</sha1hash>
 </request>
 SRC
     
@@ -314,6 +335,30 @@ SRC
     <issueno />
   </card>
   <sha1hash>2e88b9d3b173a1b00a70476743a696c651ce35bb</sha1hash>
+</request>
+SRC
+    
+    assert_xml_equal valid_add_payment_method_xml, gateway.build_add_payment_method_request(@credit_card, options)
+
+    options = {
+      :customer => 'Longbob_Longsen'
+    }
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_add_payment_method_xml = <<-SRC
+<request timestamp="20090824160201" type="card-new">
+  <merchantid>your_merchant_id</merchantid>
+  <card>
+    <ref>Longbob_Longsen1</ref>
+    <payerref>Longbob_Longsen</payerref>
+    <number>4263971921001307</number>
+    <expdate>0808</expdate>
+    <chname>Longbob Longsen</chname>
+    <type>VISA</type>
+    <issueno />
+  </card>
+  <sha1hash>51b91abe9787206e4bd6af6ad1802858052db375</sha1hash>
 </request>
 SRC
     
