@@ -326,7 +326,7 @@ SRC
   <merchantid>your_merchant_id</merchantid>
   <orderid>1</orderid>
   <card>
-    <ref>Longbob_Longsen1</ref>
+    <ref>1</ref>
     <payerref>Longbob_Longsen</payerref>
     <number>4263971921001307</number>
     <expdate>0808</expdate>
@@ -350,7 +350,7 @@ SRC
 <request timestamp="20090824160201" type="card-new">
   <merchantid>your_merchant_id</merchantid>
   <card>
-    <ref>Longbob_Longsen1</ref>
+    <ref>1</ref>
     <payerref>Longbob_Longsen</payerref>
     <number>4263971921001307</number>
     <expdate>0808</expdate>
@@ -375,14 +375,14 @@ SRC
 <request timestamp="20090824160201" type="card-cancel-card">
   <merchantid>your_merchant_id</merchantid>
   <card>
-    <ref>Longbob_Longsen1</ref>
+    <ref>1</ref>
     <payerref>Longbob_Longsen</payerref>
   </card>
-  <sha1hash>822386d63aae3b39d4dd92e09932f6af88bf677d</sha1hash>
+  <sha1hash>2c9cbca68b3694ed5ebe6fa44d289b3599aa2112</sha1hash>
 </request>
 SRC
     
-    assert_xml_equal valid_delete_payment_method_xml, gateway.build_delete_payment_method_request('Longbob_Longsen', 'Longbob_Longsen1')    
+    assert_xml_equal valid_delete_payment_method_xml, gateway.build_delete_payment_method_request('Longbob_Longsen')    
   end
 
 

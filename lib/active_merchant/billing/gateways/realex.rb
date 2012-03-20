@@ -161,7 +161,7 @@ module ActiveMerchant
           xml.tag! 'merchantid', @options[:login]
           xml.tag! 'orderid', sanitize_order_id(options[:order_id]) if options.include?(:order_id)
           xml.tag! 'card' do
-            xml.tag! 'ref', options[:customer] + "1"
+            xml.tag! 'ref', 1 # only support a single card per payer. Payers with multiple cards will be setup as multiple payers
             xml.tag! 'payerref', options[:customer]
             xml.tag! 'number', credit_card.number
             xml.tag! 'expdate', expiry_date(credit_card)
@@ -176,17 +176,17 @@ module ActiveMerchant
         xml.target!
       end
 
-      def build_delete_payment_method_request(payer_ref, card_ref) 
+      def build_delete_payment_method_request(payer_ref) 
         timestamp = new_timestamp
         xml = Builder::XmlMarkup.new :indent => 2
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'card-cancel-card' do
           xml.tag! 'merchantid', @options[:login]
           xml.tag! 'card' do
-            xml.tag! 'ref', card_ref
+            xml.tag! 'ref', 1
             xml.tag! 'payerref', payer_ref
           end
 
-          add_signed_digest(xml, timestamp, @options[:login], payer_ref, card_ref)
+          add_signed_digest(xml, timestamp, @options[:login], payer_ref, 1)
         end
       end
 
