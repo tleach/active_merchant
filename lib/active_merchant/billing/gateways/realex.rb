@@ -19,7 +19,8 @@ module ActiveMerchant
     # so if validation fails you can not correct and resend using the
     # same order id
     class RealexGateway < Gateway
-      URL = 'https://epage.payandshop.com/epage-remote.cgi'
+      URL =         'https://epage.payandshop.com/epage-remote.cgi'
+      PLUGINS_URL = 'https://epage.payandshop.com/epage-remote-plugins.cgi'
 
       CARD_MAPPING = {
         'master'            => 'MC',
@@ -83,9 +84,23 @@ module ActiveMerchant
         commit(request)
       end
 
+      def store(credit_card, options ={})
+        # First attempt to add the payer.
+        request = build_add_payer_request(credit_card, options)
+        response = commit(request, PLUGINS_URL)
+
+        # If that's successful, add the payment method
+        if response.success?
+          request = build_add_payment_method_request(credit_card, options)
+          response = commit(request, PLUGINS_URL)
+        end
+
+        response
+      end
+
       private
-      def commit(request)
-        response = parse(ssl_post(URL, request))
+      def commit(request, url=URL)
+        response = parse(ssl_post(url, request))
 
         Response.new(response[:result] == "00", message_from(response), response,
           :test => response[:message] =~ /\[ test system \]/,

@@ -101,7 +101,28 @@ class RealexTest < Test::Unit::TestCase
       assert_success @gateway.credit(@amount, '1234;1234;1234')
     end
   end
+
+  def test_store
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      }.returns(successful_plugin_response)
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      }.returns(successful_plugin_response)
+    response = @gateway.store(@credit_card, {:customer => 1})
+    assert_instance_of Response, response
+    assert_success response
+  end
   
+  def test_unsuccessful_store
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      }.returns(unsuccessful_plugin_response)
+    response = @gateway.store(@credit_card, {:customer => 1})
+    assert_instance_of Response, response
+    assert_failure response
+  end
+
   def test_supported_countries
     assert_equal ['IE', 'GB'], RealexGateway.supported_countries
   end
@@ -515,6 +536,34 @@ SRC
   <sha1hash>7384ae67....ac7d7d</sha1hash>
   <md5hash>34e7....a77d</md5hash>
 </response>"
+    RESPONSE
+  end
+
+  def successful_plugin_response
+    <<-RESPONSE
+<response timestamp="20030520152009"> 
+  <merchantid>your_merchant_id</merchantid> 
+  <account>myvisa</account> 
+  <orderid>20030428-018</orderid> 
+  <result>00</result> 
+  <message>Authorised</message> 
+  <pasref>PAS Reference</pasref> 
+  <batchid>Batch ID</batchid> 
+  <timetaken>Time taken in seconds</timetaken> 
+  <sha1hash>cdaea87dc26c852b6420e5419d765f45e9974e19</sha1hash> 
+</response>
+    RESPONSE
+  end
+
+  def unsuccessful_plugin_response
+    <<-RESPONSE
+<response timestamp="20080619112622"> 
+<result>502</result> 
+<message>Type 'payer-new' not implemented. Please check the Developer 
+Documentation for allowed 
+types</message> 
+<orderid>transaction01</orderid> 
+</response>
     RESPONSE
   end
 
