@@ -123,6 +123,24 @@ class RealexTest < Test::Unit::TestCase
     assert_failure response
   end
 
+  def test_unstore
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      }.returns(successful_plugin_response)
+    response = @gateway.unstore(1)
+    assert_instance_of Response, response
+    assert_success response
+  end
+
+  def test_unsuccessful_unstore
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      }.returns(unsuccessful_plugin_response)
+    response = @gateway.unstore(1)
+    assert_instance_of Response, response
+    assert_failure response
+  end
+
   def test_supported_countries
     assert_equal ['IE', 'GB'], RealexGateway.supported_countries
   end

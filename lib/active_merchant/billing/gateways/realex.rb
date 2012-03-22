@@ -94,8 +94,12 @@ module ActiveMerchant
           request = build_add_payment_method_request(credit_card, options)
           response = commit(request, PLUGINS_URL)
         end
-
         response
+      end
+
+      def unstore(ref, options = {})
+        request = build_delete_payment_method_request(ref)
+        commit request, PLUGINS_URL
       end
 
       private
