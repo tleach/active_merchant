@@ -213,6 +213,19 @@ module ActiveMerchant
         end
       end
 
+      def build_receipt_in_request(payer_ref, money, options={})
+        timestamp = new_timestamp
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'receipt-in' do
+          add_merchant_details(xml, options)
+          add_amount(xml, money, options)
+          xml.tag! 'payerref', payer_ref
+          xml.tag! 'paymentmethod', 1
+          xml.tag! 'autosettle', 'flag' => 1
+          add_signed_digest(xml, timestamp, @options[:login], nil, money, options[:currency] || currency(money), payer_ref)
+        end
+      end
+
       def build_capture_request(authorization, options)
         timestamp = new_timestamp
         xml = Builder::XmlMarkup.new :indent => 2

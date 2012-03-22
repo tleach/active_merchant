@@ -7,7 +7,7 @@ class RealexTest < Test::Unit::TestCase
   class ActiveMerchant::Billing::RealexGateway
     # For the purposes of testing, lets redefine some protected methods as public.
     public :build_purchase_or_authorization_request, :build_refund_request, :build_void_request, :build_capture_request, :avs_input_code,
-           :build_add_payer_request, :build_add_payment_method_request, :build_delete_payment_method_request
+           :build_add_payer_request, :build_add_payment_method_request, :build_delete_payment_method_request, :build_receipt_in_request
   end
   
   def setup
@@ -410,7 +410,6 @@ SRC
     assert_xml_equal valid_add_payment_method_xml, gateway.build_add_payment_method_request(@credit_card, options)
   end
 
-
   def test_delete_payment_method_xml
     gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
 
@@ -430,6 +429,27 @@ SRC
     assert_xml_equal valid_delete_payment_method_xml, gateway.build_delete_payment_method_request('Longbob_Longsen')    
   end
 
+  def test_receipt_in_xml
+    gateway = RealexGateway.new(:login => @login, :password => @password, :account => @account, :rebate_secret => @rebate_secret)
+
+    gateway.expects(:new_timestamp).returns('20090824160201')
+
+    valid_receipt_in_xml = <<-SRC
+<request type="receipt-in" timestamp="20090824160201"> 
+  <merchantid>your_merchant_id</merchantid> 
+  <account>your_account</account> 
+  <amount currency="AUD">9999</amount> 
+  <payerref>33</payerref> 
+  <paymentmethod>1</paymentmethod> 
+  <autosettle flag="1" /> 
+  <sha1hash>8561c62727b670676a49b2a2577832592991d117</sha1hash> 
+</request>
+SRC
+    
+    assert_xml_equal(
+      valid_receipt_in_xml, 
+      gateway.build_receipt_in_request(33, 9999, {:currency => 'AUD'}))
+  end
 
   def test_should_extract_avs_input
     address = {:address1 => "123 Fake Street", :zip => 'BT1 0HX'}
