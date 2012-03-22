@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'digest/sha1'
+require 'xmlsimple'
 
 class RealexTest < Test::Unit::TestCase
   
@@ -104,10 +105,12 @@ class RealexTest < Test::Unit::TestCase
 
   def test_store
     @gateway.expects(:ssl_post).with(){|endpoint, data|
-      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      'payer-new' == XmlSimple.xml_in(data)['type'] &&
+      "https://epage.payandshop.com/epage-remote-plugins.cgi" == endpoint
       }.returns(successful_plugin_response)
     @gateway.expects(:ssl_post).with(){|endpoint, data|
-      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      'card-new' == XmlSimple.xml_in(data)['type'] &&
+      "https://epage.payandshop.com/epage-remote-plugins.cgi" == endpoint
       }.returns(successful_plugin_response)
     response = @gateway.store(@credit_card, {:customer => 1})
     assert_instance_of Response, response
@@ -116,7 +119,8 @@ class RealexTest < Test::Unit::TestCase
   
   def test_unsuccessful_store
     @gateway.expects(:ssl_post).with(){|endpoint, data|
-      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      'payer-new' == XmlSimple.xml_in(data)['type'] &&
+      "https://epage.payandshop.com/epage-remote-plugins.cgi" == endpoint
       }.returns(unsuccessful_plugin_response)
     response = @gateway.store(@credit_card, {:customer => 1})
     assert_instance_of Response, response
@@ -125,7 +129,8 @@ class RealexTest < Test::Unit::TestCase
 
   def test_unstore
     @gateway.expects(:ssl_post).with(){|endpoint, data|
-      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      'card-cancel-card'.eql?(XmlSimple.xml_in(data)['type']) &&
+      "https://epage.payandshop.com/epage-remote-plugins.cgi" == endpoint
       }.returns(successful_plugin_response)
     response = @gateway.unstore(1)
     assert_instance_of Response, response
@@ -134,7 +139,8 @@ class RealexTest < Test::Unit::TestCase
 
   def test_unsuccessful_unstore
     @gateway.expects(:ssl_post).with(){|endpoint, data|
-      assert_equal "https://epage.payandshop.com/epage-remote-plugins.cgi", endpoint
+      'card-cancel-card'.eql?(XmlSimple.xml_in(data)['type']) &&
+      "https://epage.payandshop.com/epage-remote-plugins.cgi" == endpoint
       }.returns(unsuccessful_plugin_response)
     response = @gateway.unstore(1)
     assert_instance_of Response, response
