@@ -98,6 +98,10 @@ module ActiveMerchant
       end
 
       def unstore(ref, options = {})
+        # Note: At the time of writing RealVault bizarrely does not support deleting payers, only
+        # deleting cards. This is odd given the Data Protection Act implications. 
+        # So for now we just delete the card. In the future, if RealEx implement it, this method
+        # should be updated to delete the payer record as well. 
         request = build_delete_payment_method_request(ref)
         commit request, PLUGINS_URL
       end
