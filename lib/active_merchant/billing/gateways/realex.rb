@@ -232,6 +232,19 @@ module ActiveMerchant
         end
       end
 
+      def build_payment_out_request(payer_ref, money, options={})
+        timestamp = new_timestamp
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'payment-out' do
+          add_merchant_details(xml, options)
+          add_amount(xml, money, options)
+          xml.tag! 'payerref', payer_ref
+          xml.tag! 'paymentmethod', 1
+          xml.tag! 'refundhash', @options[:refund_hash]
+          add_signed_digest(xml, timestamp, @options[:login], nil, money, options[:currency] || currency(money), payer_ref)
+        end
+      end
+
       def build_capture_request(authorization, options)
         timestamp = new_timestamp
         xml = Builder::XmlMarkup.new :indent => 2
