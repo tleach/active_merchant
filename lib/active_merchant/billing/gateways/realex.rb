@@ -50,10 +50,16 @@ module ActiveMerchant
         super
       end
 
-      def purchase(money, credit_card, options = {})
+      def purchase(money, credit_card_or_payer_ref, options = {})
         requires!(options, :order_id)
 
-        request = build_purchase_or_authorization_request(:purchase, money, credit_card, options)
+        # Detect whether we have been provided with a full set of card details (a hash) or simply a
+        # reference to a set of card details already stored with RealEx (an int or string)
+        if credit_card_or_payer_ref.is_a?(String) || credit_card_or_payer_ref.is_a?(Integer)
+          request = build_receipt_in_request(credit_card_or_payer_ref, money, options)
+        else
+          request = build_purchase_or_authorization_request(:purchase, money, credit_card_or_payer_ref, options)
+        end
         commit(request)
       end
 

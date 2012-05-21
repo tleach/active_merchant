@@ -85,6 +85,16 @@ class RealexTest < Test::Unit::TestCase
     assert_failure response
     assert response.test?
   end
+
+  def test_successful_purchase_with_stored_card
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      'receipt-in' == XmlSimple.xml_in(data)['type'] 
+      }.returns(successful_plugin_response)
+
+    response = @gateway.purchase(@amount, 333, @options)
+    assert_instance_of Response, response
+    assert_success response
+  end
   
   def test_successful_refund
     @gateway.expects(:ssl_post).returns(successful_refund_response)    
