@@ -107,6 +107,16 @@ class RealexTest < Test::Unit::TestCase
     assert_failure @gateway.refund(@amount, '1234;1234;1234')
   end
 
+  def test_successful_refund_with_stored_card
+    @gateway.expects(:ssl_post).with(){|endpoint, data|
+      'payment-out' == XmlSimple.xml_in(data)['type'] 
+      }.returns(successful_plugin_response)
+
+    response = @gateway.refund(@amount, 333, @options)
+    assert_instance_of Response, response
+    assert_success response
+  end
+
   def test_deprecated_credit
     @gateway.expects(:ssl_post).returns(successful_refund_response)
     assert_deprecation_warning(Gateway::CREDIT_DEPRECATION_MESSAGE, @gateway) do

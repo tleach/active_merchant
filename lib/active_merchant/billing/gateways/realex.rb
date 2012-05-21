@@ -75,8 +75,14 @@ module ActiveMerchant
         commit(request)
       end
 
-      def refund(money, authorization, options = {})
-        request = build_refund_request(money, authorization, options)
+      def refund(money, authorization_or_payer_ref, options = {})
+        # Detect whether we have been provided with a set of authorizatiokn details (a hash) or simply a
+        # reference to a set of card details already stored with RealEx (an int or string)
+        if authorization_or_payer_ref.is_a?(String) || authorization_or_payer_ref.is_a?(Integer)
+          request = build_payment_out_request(authorization_or_payer_ref, money, options)
+        else
+          request = build_refund_request(money, authorization_or_payer_ref, options)
+        end
         commit(request)
       end
 
