@@ -400,7 +400,7 @@ SRC
     <type>VISA</type>
     <issueno />
   </card>
-  <sha1hash>2e88b9d3b173a1b00a70476743a696c651ce35bb</sha1hash>
+  <sha1hash>946379fe5d9b4ddd90a974041d216bdc2e4dcae7</sha1hash>
 </request>
 SRC
     
@@ -424,7 +424,7 @@ SRC
     <type>VISA</type>
     <issueno />
   </card>
-  <sha1hash>51b91abe9787206e4bd6af6ad1802858052db375</sha1hash>
+  <sha1hash>606d5e89158c96bb4e80fc81af02228f3aba3823</sha1hash>
 </request>
 SRC
     
