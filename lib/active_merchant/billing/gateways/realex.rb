@@ -80,6 +80,7 @@ module ActiveMerchant
         # Detect whether we have been provided with a set of authorizatiokn details (a hash) or simply a
         # reference to a set of card details already stored with RealEx (an int or string)
         if authorization_or_payer_ref.is_a?(String) || authorization_or_payer_ref.is_a?(Integer)
+          requires!(options, :order_id)
           request = build_payment_out_request(authorization_or_payer_ref, money, options)
           commit(request, PLUGINS_URL)
         else
@@ -232,10 +233,11 @@ module ActiveMerchant
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'receipt-in' do
           add_merchant_details(xml, options)
           add_amount(xml, money, options)
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id]) if options.include?(:order_id)
           xml.tag! 'payerref', payer_ref
           xml.tag! 'paymentmethod', 1
           xml.tag! 'autosettle', 'flag' => 1
-          add_signed_digest(xml, timestamp, @options[:login], nil, money, options[:currency] || currency(money), payer_ref)
+          add_signed_digest(xml, timestamp, @options[:login], sanitize_order_id(options[:order_id]), money, options[:currency] || currency(money), payer_ref)
         end
       end
 
@@ -245,10 +247,11 @@ module ActiveMerchant
         xml.tag! 'request', 'timestamp' => timestamp, 'type' => 'payment-out' do
           add_merchant_details(xml, options)
           add_amount(xml, money, options)
+          xml.tag! 'orderid', sanitize_order_id(options[:order_id]) if options.include?(:order_id)
           xml.tag! 'payerref', payer_ref
           xml.tag! 'paymentmethod', 1
           xml.tag! 'refundhash', @options[:refund_hash]
-          add_signed_digest(xml, timestamp, @options[:login], nil, money, options[:currency] || currency(money), payer_ref)
+          add_signed_digest(xml, timestamp, @options[:login], sanitize_order_id(options[:order_id]), money, options[:currency] || currency(money), payer_ref)
         end
       end
 
