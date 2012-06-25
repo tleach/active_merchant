@@ -122,8 +122,15 @@ module ActiveMerchant
       end
 
       private
+
+      def logger
+        @options[:logger]
+      end
+
       def commit(request, url=URL)
+        logger.debug request if logger
         response = parse(ssl_post(url, request))
+        logger.debug response if logger
 
         Response.new(response[:result] == "00", message_from(response), response,
           :test => response[:message] =~ /\[ test system \]/,
